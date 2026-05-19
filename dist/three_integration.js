@@ -53,7 +53,7 @@ const initThreeJS = () => {
             raikuModel = gltf.scene;
             
             // Scale and rotation adjustments
-            raikuModel.scale.set(0.35, 0.35, 0.35); 
+            raikuModel.scale.set(0.2, 0.2, 0.2); 
             raikuModel.rotation.y = Math.PI; // Face forward/camera (adjust if backwards)
             
             raikuModel.traverse(child => {
