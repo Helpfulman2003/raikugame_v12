@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build && node index.js",
-    "start:legacy": "set NODE_OPTIONS=--openssl-legacy-provider&& npm run build && node index.js",
-    "build": "webpack --mode production --module-bind js=babel-loader"
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --mode production --module-bind js=babel-loader"
   },
   "repository": {
     "type": "git",
@@ -22,6 +21,7 @@
     "@babel/core": "^7.0.0-beta.42",
     "@babel/preset-env": "^7.0.0-beta.42",
     "babel-loader": "^8.0.0-beta",
+    "cross-env": "^10.1.0",
     "express": "^4.16.3",
     "opn": "^5.3.0",
     "webpack": "^4.0.1",
