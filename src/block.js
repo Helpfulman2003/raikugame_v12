@@ -33,13 +33,10 @@ const swing = (instance, engine, time) => {
   const ropeHeight = engine.getVariable(constant.ropeHeight)
   if (instance.status !== constant.swing) return
   const i = instance
-  const initialAngle = engine.getVariable(constant.initialAngle)
-  i.angle = initialAngle *
-    getSwingBlockVelocity(engine, time)
-  i.weightX = i.x +
-    (Math.sin(i.angle) * ropeHeight)
-  i.weightY = i.y +
-    (Math.cos(i.angle) * ropeHeight)
+  const amplitude = engine.width * 0.4
+  i.x = (engine.width / 2) + getSwingBlockVelocity(engine, time) * amplitude
+  i.weightX = i.x
+  i.weightY = ropeHeight * 0.5
 }
 
 const checkBlockOut = (instance, engine) => {
@@ -69,7 +66,7 @@ export const blockAction = (instance, engine, time) => {
     instance.updateWidth(engine.getVariable(constant.blockWidth))
     instance.updateHeight(engine.getVariable(constant.blockHeight))
     instance.x = engine.width / 2
-    instance.y = ropeHeight * -1.5
+    instance.y = ropeHeight * 0.5
   }
   const line = engine.getInstance('line')
   switch (i.status) {
@@ -88,7 +85,7 @@ export const blockAction = (instance, engine, time) => {
       break
     case constant.beforeDrop:
       i.x = instance.weightX - instance.calWidth
-      i.y = instance.weightY + (0.3 * instance.height) // add rope height
+      i.y = instance.weightY + (0.3 * instance.height)
       i.rotate = 0
       i.ay = engine.pixelsPerFrame(0.0003 * engine.height) // acceleration of gravity
       i.startDropTime = time
@@ -127,13 +124,28 @@ export const blockAction = (instance, engine, time) => {
         case 5:
           i.status = constant.land
           const lastSuccessCount = engine.getVariable(constant.successCount)
+          
+          // Snapshot current positions of all landed blocks and the line
+          // to prevent snapping back and overlapping if dropped quickly.
+          const instances = engine.instancesObj[engine.defaultLayer] || []
+          instances.forEach((ins) => {
+            if (ins.name.startsWith('block_') && ins.status === constant.land) {
+              ins.landStartY = ins.y
+            }
+          })
+          if (line) {
+            line.lineStartY = line.y
+          }
+
           addSuccessCount(engine)
           engine.setTimeMovement(constant.moveDownMovement, 500)
           if (lastSuccessCount === 10 || lastSuccessCount === 15) {
             engine.setTimeMovement(constant.lightningMovement, 150)
           }
           instance.y = blockY
+          instance.landStartY = blockY  // snapshot fixed anchor for move-down animation
           line.y = blockY
+          line.lineStartY = blockY  // sync line anchor too
           line.x = i.x - i.calWidth
           line.collisionX = line.x + i.width
           // 作弊检测 超出左边或右边1／3
@@ -156,20 +168,28 @@ export const blockAction = (instance, engine, time) => {
       }
       break
     case constant.land:
-      engine.getTimeMovement(
-        constant.moveDownMovement,
-        [[instance.y, instance.y + (getMoveDownValue(engine, { pixelsPerFrame: s => s / 2 }))]],
-        (value) => {
-          if (!instance.visible) return
-          instance.y = value
-          if (instance.y > engine.height) {
-            instance.visible = false
+      if (engine.checkTimeMovement(constant.moveDownMovement)) {
+        // Animation running — use fixed anchor so Y doesn't drift
+        const moveDownDelta = getMoveDownValue(engine, { pixelsPerFrame: s => s / 2 })
+        const landAnchor = instance.landStartY !== undefined ? instance.landStartY : instance.y
+        engine.getTimeMovement(
+          constant.moveDownMovement,
+          [[landAnchor, landAnchor + moveDownDelta]],
+          (value) => {
+            if (!instance.visible) return
+            instance.y = value
+            if (instance.y > engine.height) {
+              instance.visible = false
+            }
+          },
+          {
+            name: instance.name
           }
-        },
-        {
-          name: instance.name
-        }
-      )
+        )
+      } else {
+        // Animation ended — update anchor to current resting Y
+        instance.landStartY = instance.y
+      }
       instance.x += getLandBlockVelocity(engine, time)
       break
     case constant.rotateLeft:
@@ -203,21 +223,37 @@ export const blockAction = (instance, engine, time) => {
   }
 }
 
+const drawNeonSquare = (instance, engine, perfect) => {
+  const { ctx } = engine
+  const padding = 2
+  ctx.save()
+  ctx.beginPath()
+  ctx.lineWidth = 3
+  ctx.strokeStyle = perfect ? '#ffea00' : '#ccff00' 
+  ctx.fillStyle = 'rgba(204, 255, 0, 0.2)'
+  ctx.shadowColor = perfect ? '#ffea00' : '#ccff00'
+  ctx.shadowBlur = 10
+  ctx.rect(instance.x + padding, instance.y + padding, instance.width - padding*2, instance.height - padding*2)
+  ctx.fill()
+  ctx.stroke()
+  ctx.restore()
+}
+
 const drawSwingBlock = (instance, engine) => {
-  const bl = engine.getImg('blockRope')
-  engine.ctx.drawImage(
-    bl, instance.weightX - instance.calWidth
-    , instance.weightY
-    , instance.width, instance.height * 1.3
-  )
-  const leftX = instance.weightX - instance.calWidth
-  engine.debugLineY(leftX)
+  // Save position temporarily to draw the block hanging
+  const originalX = instance.x
+  const originalY = instance.y
+  instance.x = instance.weightX - instance.calWidth
+  instance.y = instance.weightY + (0.3 * instance.height)
+  
+  drawNeonSquare(instance, engine, false)
+  
+  instance.x = originalX
+  instance.y = originalY
 }
 
 const drawBlock = (instance, engine) => {
-  const { perfect } = instance
-  const bl = engine.getImg(perfect ? 'block-perfect' : 'block')
-  engine.ctx.drawImage(bl, instance.x, instance.y, instance.width, instance.height)
+  drawNeonSquare(instance, engine, instance.perfect)
 }
 
 const drawRotatedBlock = (instance, engine) => {

@@ -5,11 +5,7 @@ export const checkMoveDown = engine =>
 
 export const getMoveDownValue = (engine, store) => {
   const pixelsPerFrame = store ? store.pixelsPerFrame : engine.pixelsPerFrame.bind(engine)
-  const successCount = engine.getVariable(constant.successCount)
   const calHeight = engine.getVariable(constant.blockHeight) * 2
-  if (successCount <= 4) {
-    return pixelsPerFrame(calHeight * 1.25)
-  }
   return pixelsPerFrame(calHeight)
 }
 
@@ -135,7 +131,7 @@ export const addFailedCount = (engine) => {
   engine.setVariable(constant.failedCount, failed)
   engine.setVariable(constant.perfectCount, 0)
   if (setGameFailed) setGameFailed(failed)
-  if (failed >= 3) {
+  if (failed >= 1) {
     engine.pauseAudio('bgm')
     engine.playAudio('game-over')
     engine.setVariable(constant.gameStartNow, false)
@@ -159,18 +155,13 @@ export const drawYellowString = (engine, option) => {
   } = option
   const { ctx } = engine
   const fontSize = size
-  const lineSize = fontSize * 0.1
   ctx.save()
   ctx.beginPath()
-  const gradient = ctx.createLinearGradient(0, 0, 0, y)
-  gradient.addColorStop(0, '#FAD961')
-  gradient.addColorStop(1, '#F76B1C')
-  ctx.fillStyle = gradient
-  ctx.lineWidth = lineSize
-  ctx.strokeStyle = '#FFF'
+  ctx.fillStyle = '#ccff00'
+  ctx.shadowColor = '#ccff00'
+  ctx.shadowBlur = 10
   ctx.textAlign = textAlign || 'center'
   ctx.font = `${fontWeight} ${fontSize}px ${fontName}`
-  ctx.strokeText(string, x, y)
   ctx.fillText(string, x, y)
   ctx.restore()
 }

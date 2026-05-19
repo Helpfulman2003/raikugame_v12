@@ -62,21 +62,9 @@ export const flightAction = (instance, engine) => {
 }
 
 export const flightPainter = (instance, engine) => {
-  const { ctx } = engine
-  const flight = engine.getImg(instance.imgName)
-  ctx.drawImage(flight, instance.x, instance.y, instance.width, instance.height)
+  // Birds disabled for neon Raiku game
 }
 
 export const addFlight = (engine, number, type) => {
-  const flightCount = engine.getVariable(constant.flightCount)
-  if (flightCount === number) return
-  const flight = new Instance({
-    name: `flight_${number}`,
-    action: flightAction,
-    painter: flightPainter
-  })
-  flight.imgName = `f${number}`
-  flight.type = type
-  engine.addInstance(flight, constant.flightLayer)
-  engine.setVariable(constant.flightCount, number)
+  // Birds disabled for neon Raiku game
 }

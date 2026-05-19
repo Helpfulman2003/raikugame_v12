@@ -17,61 +17,72 @@ export const endAnimate = (engine) => {
   const gameScore = engine.getVariable(constant.gameScore, 0)
   const threeFiguresOffset = Number(successCount) > 99 ? engine.width * 0.1 : 0
 
+  const { ctx } = engine
+  const padding = engine.width * 0.015
+  const boxW = engine.width * 0.22
+  const boxH = engine.height * 0.1
+  const topY = engine.height * 0.01
+  const labelSize = engine.width * 0.045
+  const numSize = engine.width * 0.085
+
+  // Draw semi-transparent background boxes
+  ctx.save()
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'
+  ctx.strokeStyle = 'rgba(204, 255, 0, 0.4)'
+  ctx.lineWidth = 1
+  // Left box - floor
+  ctx.beginPath()
+  ctx.roundRect(padding, topY, boxW, boxH, 6)
+  ctx.fill()
+  ctx.stroke()
+  // Right box - score
+  ctx.beginPath()
+  ctx.roundRect(engine.width - boxW - padding, topY, boxW, boxH, 6)
+  ctx.fill()
+  ctx.stroke()
+  ctx.restore()
+
+  // Floor label + number
   drawYellowString(engine, {
-    string: 'floor',
-    size: engine.width * 0.06,
-    x: (engine.width * 0.24) + threeFiguresOffset,
-    y: engine.width * 0.12,
-    textAlign: 'left',
+    string: 'FLOOR',
+    size: labelSize,
+    x: padding + boxW * 0.5,
+    y: topY + boxH * 0.38,
+    textAlign: 'center',
     fontName: 'Arial',
     fontWeight: 'bold'
   })
   drawYellowString(engine, {
     string: successCount,
-    size: engine.width * 0.17,
-    x: (engine.width * 0.22) + threeFiguresOffset,
-    y: engine.width * 0.2,
-    textAlign: 'right'
+    size: numSize,
+    x: padding + boxW * 0.5,
+    y: topY + boxH * 0.92,
+    textAlign: 'center',
+    fontName: 'Arial',
+    fontWeight: 'bold'
   })
-  const score = engine.getImg('score')
-  const scoreWidth = score.width
-  const scoreHeight = score.height
-  const zoomedWidth = engine.width * 0.35
-  const zoomedHeight = (scoreHeight * zoomedWidth) / scoreWidth
-  engine.ctx.drawImage(
-    score,
-    engine.width * 0.61,
-    engine.width * 0.038,
-    zoomedWidth,
-    zoomedHeight
-  )
+
+  // Score label + number
+  drawYellowString(engine, {
+    string: 'SCORE',
+    size: labelSize,
+    x: engine.width - boxW * 0.5 - padding,
+    y: topY + boxH * 0.38,
+    textAlign: 'center',
+    fontName: 'Arial',
+    fontWeight: 'bold'
+  })
   drawYellowString(engine, {
     string: gameScore,
-    size: engine.width * 0.06,
-    x: engine.width * 0.9,
-    y: engine.width * 0.11,
-    textAlign: 'right'
+    size: numSize,
+    x: engine.width - boxW * 0.5 - padding,
+    y: topY + boxH * 0.92,
+    textAlign: 'center',
+    fontName: 'Arial',
+    fontWeight: 'bold'
   })
-  const { ctx } = engine
-  const heart = engine.getImg('heart')
-  const heartWidth = heart.width
-  const heartHeight = heart.height
-  const zoomedHeartWidth = engine.width * 0.08
-  const zoomedHeartHeight = (heartHeight * zoomedHeartWidth) / heartWidth
-  for (let i = 1; i <= 3; i += 1) {
-    ctx.save()
-    if (i <= failedCount) {
-      ctx.globalAlpha = 0.2
-    }
-    ctx.drawImage(
-      heart,
-      (engine.width * 0.66) + ((i - 1) * zoomedHeartWidth),
-      engine.width * 0.16,
-      zoomedHeartWidth,
-      zoomedHeartHeight
-    )
-    ctx.restore()
-  }
+  
+  // Draw hearts removed as requested
 }
 
 export const startAnimate = (engine) => {

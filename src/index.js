@@ -47,7 +47,7 @@ window.TowerGame = (option = {}) => {
   game.addAudio('rotate', pathGenerator('rotate.mp3'))
   game.addAudio('bgm', pathGenerator('bgm.mp3'))
   game.setVariable(constant.blockWidth, game.width * 0.25)
-  game.setVariable(constant.blockHeight, game.getVariable(constant.blockWidth) * 0.71)
+  game.setVariable(constant.blockHeight, game.getVariable(constant.blockWidth))
   game.setVariable(constant.cloudSize, game.width * 0.3)
   game.setVariable(constant.ropeHeight, game.height * 0.4)
   game.setVariable(constant.blockCount, 0)
@@ -56,6 +56,7 @@ window.TowerGame = (option = {}) => {
   game.setVariable(constant.gameScore, 0)
   game.setVariable(constant.hardMode, false)
   game.setVariable(constant.gameUserOption, option)
+  /*
   for (let i = 1; i <= 4; i += 1) {
     const cloud = new Instance({
       name: `cloud_${i}`,
@@ -66,6 +67,7 @@ window.TowerGame = (option = {}) => {
     cloud.count = 5 - i
     game.addInstance(cloud)
   }
+  */
   const line = new Instance({
     name: 'line',
     action: lineAction,
@@ -98,6 +100,7 @@ window.TowerGame = (option = {}) => {
   }
 
   game.start = () => {
+    /*
     const tutorial = new Instance({
       name: 'tutorial',
       action: tutorialAction,
@@ -110,8 +113,9 @@ window.TowerGame = (option = {}) => {
       painter: tutorialPainter
     })
     game.addInstance(tutorialArrow)
-    game.setTimeMovement(constant.bgInitMovement, 500)
     game.setTimeMovement(constant.tutorialMovement, 500)
+    */
+    game.setTimeMovement(constant.bgInitMovement, 500)
     game.setVariable(constant.gameStartNow, true)
   }
 
