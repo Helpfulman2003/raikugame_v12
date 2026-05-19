@@ -44,29 +44,43 @@ const initThreeJS = () => {
     let raikuModel;
 
     const loader = new THREE.GLTFLoader();
-    loader.load('./assets/raiku_fly.glb', (gltf) => {
-        raikuModel = gltf.scene;
-        
-        // Scale and rotation adjustments
-        raikuModel.scale.set(0.35, 0.35, 0.35); 
-        raikuModel.rotation.y = Math.PI; // Face forward/camera (adjust if backwards)
-        
-        raikuModel.traverse(child => {
-            if (child.isMesh) {
-                child.material.wireframe = true;
-                child.material.color.set(0xccff00);
-                child.material.emissive = new THREE.Color(0xccff00);
-                child.material.emissiveIntensity = 1.0;
+    const glbUrl = (window.location.origin + window.location.pathname).replace(/\/[^/]*$/, '/') + 'assets/raiku_fly.glb';
+    console.log('[ThreeJS] Loading dragon from:', glbUrl);
+    loader.load(
+        glbUrl,
+        (gltf) => {
+            console.log('[ThreeJS] Dragon loaded successfully!');
+            raikuModel = gltf.scene;
+            
+            // Scale and rotation adjustments
+            raikuModel.scale.set(0.35, 0.35, 0.35); 
+            raikuModel.rotation.y = Math.PI; // Face forward/camera (adjust if backwards)
+            
+            raikuModel.traverse(child => {
+                if (child.isMesh) {
+                    child.material.wireframe = true;
+                    child.material.color.set(0xccff00);
+                    child.material.emissive = new THREE.Color(0xccff00);
+                    child.material.emissiveIntensity = 1.0;
+                }
+            });
+
+            scene.add(raikuModel);
+
+            if (gltf.animations && gltf.animations.length) {
+                mixer = new THREE.AnimationMixer(raikuModel);
+                mixer.clipAction(gltf.animations[0]).play();
             }
-        });
-
-        scene.add(raikuModel);
-
-        if (gltf.animations && gltf.animations.length) {
-            mixer = new THREE.AnimationMixer(raikuModel);
-            mixer.clipAction(gltf.animations[0]).play();
+        },
+        (xhr) => {
+            const pct = Math.round((xhr.loaded / xhr.total) * 100);
+            console.log(`[ThreeJS] Dragon loading: ${pct}%`);
+        },
+        (error) => {
+            console.error('[ThreeJS] ERROR loading dragon GLB:', error);
+            console.error('[ThreeJS] Tried URL:', glbUrl);
         }
-    });
+    );
 
     const clock = new THREE.Clock();
     let size = { width: 1, height: 1 };
