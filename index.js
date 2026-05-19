@@ -6,7 +6,7 @@ const server = express()
 const host = 'http://localhost:8082'
 server.use('/assets', express.static(path.resolve(__dirname, './assets')))
 server.use('/dist', express.static(path.resolve(__dirname, './dist')))
-server.use(express.static(path.resolve(__dirname, './')))  // serve root files like three_integration.js
+server.use(express.static(path.resolve(__dirname, './')))  // serve root static files (three_integration.js is moved to dist to work on Vercel)
 
 server.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, './index.html'));
